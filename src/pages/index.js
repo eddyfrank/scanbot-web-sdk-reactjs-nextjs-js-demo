@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false)
+  const [imageData, setImageData] = useState(null)
 
   return (
     <>
@@ -23,7 +24,14 @@ export default function Home() {
         <Script src="/ScanbotSDK.min.js" onReady={() => {setIsScriptLoaded(true)}} />
 
         {isScriptLoaded && (
-            <ScanbotDemoScannerComponent handleBarcode={(barcodeValue) => {alert(barcodeValue)}} />
+            <ScanbotDemoScannerComponent
+                //handleBarcode={(barcodeValue) => {alert(barcodeValue)}}
+                handleDocument={(imgData) => {setImageData(imgData)}}
+            />
+        )}
+
+        {imageData && (
+            <img style={{width: 300}} src={imageData} alt={''} />
         )}
 
       </main>
