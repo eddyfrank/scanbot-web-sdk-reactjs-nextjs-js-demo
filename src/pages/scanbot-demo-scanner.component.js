@@ -58,18 +58,47 @@ function ScanbotDemoScannerComponent({ handleBarcode, handleDocument }) {
     }
   }
 
+  let scanner;
+
   async function startDocumentScanner() {
     const sdk = await initSdk();
+
+    let userCapturedManually = false;
+
+    const customOnCaptureButtonClick = async () => {
+      userCapturedManually = true;
+      await scanner.defaultCaptureButtonClick();
+      userCapturedManually = false;
+    };
+
     const config = {
       containerId: 'scanner-view',
       autoCaptureEnabled: true,
       ignoreBadAspectRatio: true,
-      onDocumentDetected: async (result) => result.success && handleDocument && handleDocument(await sdk.toDataUrl(result.cropped)),
+      acceptedSizeScore: 50,
+      onCaptureButtonClick: async (e) => {
+        console.log(e);
+        await customOnCaptureButtonClick();
+      },
+      onDocumentDetected: async (result) => {
+        let imageData;
+        if (userCapturedManually) {
+          imageData = result.original;
+        }
+        else if (result.success) {
+          imageData = result.cropped;
+        }
+
+        if (imageData && handleDocument) {
+          handleDocument(await sdk.toDataUrl(imageData));
+        }
+      },
       preferredCamera: 'camera2 0, facing back'
     };
 
     try {
-      await sdk.createDocumentScanner(config);
+      scanner = await sdk.createDocumentScanner(config);
+      console.log(scanner);
     } catch (e) {
       console.error(e);
       alert('ERROR: ' + JSON.stringify(e));
